@@ -175,3 +175,14 @@ class TestAccount(unittest.TestCase):
         """It should not Deserialize an account with a TypeError"""
         account = Account()
         self.assertRaises(DataValidationError, account.deserialize, [])
+
+    def test_initial_id_none(self):
+        """It should initialize the id to None"""
+        account = Account()
+        self.assertIsNone(account.id, "L'attribut 'id' doit être None après l'initialisation")
+
+    def test_account_repr(self):
+        """It should represent the Account correctly"""
+        account = AccountFactory()
+        expected_repr = f"<Account {account.name} id=[{account.id}]>"
+        self.assertEqual(repr(account), expected_repr)
