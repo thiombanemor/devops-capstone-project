@@ -5,6 +5,7 @@ Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
   coverage report -m
 """
+
 import os
 import logging
 from unittest import TestCase
@@ -25,6 +26,8 @@ HTTPS_ENVIRON = {'wsgi.url_scheme': 'https'}
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
+
+
 class TestAccountService(TestCase):
     """Account Service Tests"""
 
@@ -62,7 +65,10 @@ class TestAccountService(TestCase):
         accounts = []
         for _ in range(count):
             account = AccountFactory()
-            response = self.client.post(BASE_URL, json=account.serialize())
+            response = self.client.post(
+                BASE_URL,
+                json=account.serialize()
+            )
             self.assertEqual(
                 response.status_code,
                 status.HTTP_201_CREATED,
@@ -113,7 +119,10 @@ class TestAccountService(TestCase):
 
     def test_bad_request(self):
         """It should not Create an Account when sending the wrong data"""
-        response = self.client.post(BASE_URL, json={"name": "not enough data"})
+        response = self.client.post(
+            BASE_URL,
+            json={"name": "not enough data"}
+        )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_unsupported_media_type(self):
@@ -124,15 +133,17 @@ class TestAccountService(TestCase):
             json=account.serialize(),
             content_type="test/html"
         )
-        self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
-
-    # ADD YOUR TEST CASES HERE ...
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+        )
 
     def test_get_account(self):
         """It should Read a single Account"""
         account = self._create_accounts(1)[0]
         resp = self.client.get(
-            f"{BASE_URL}/{account.id}", content_type="application/json"
+            f"{BASE_URL}/{account.id}",
+            content_type="application/json"
         )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
@@ -155,13 +166,19 @@ class TestAccountService(TestCase):
         """It should Update an existing Account"""
         # create an Account to update
         test_account = AccountFactory()
-        resp = self.client.post(BASE_URL, json=test_account.serialize())
+        resp = self.client.post(
+            BASE_URL,
+            json=test_account.serialize()
+        )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
 
         # update the account
         new_account = resp.get_json()
         new_account["name"] = "Something Known"
-        resp = self.client.put(f"{BASE_URL}/{new_account['id']}", json=new_account)
+        resp = self.client.put(
+            f"{BASE_URL}/{new_account['id']}",
+            json=new_account
+        )
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
         updated_account = resp.get_json()
         self.assertEqual(updated_account["name"], "Something Known")
@@ -177,7 +194,6 @@ class TestAccountService(TestCase):
         resp = self.client.delete(BASE_URL)
         self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    # This is the test case to verify the headers added by Talisman
     def test_security_headers(self):
         """It should return security headers"""
         response = self.client.get('/', environ_overrides=HTTPS_ENVIRON)
@@ -185,7 +201,9 @@ class TestAccountService(TestCase):
         headers = {
             'X-Frame-Options': 'SAMEORIGIN',
             'X-Content-Type-Options': 'nosniff',
-            'Content-Security-Policy': 'default-src \'self\'; object-src \'none\'',
+            'Content-Security-Policy': (
+                'default-src \'self\'; object-src \'none\''
+            ),
             'Referrer-Policy': 'strict-origin-when-cross-origin'
         }
         for key, value in headers.items():
@@ -196,4 +214,7 @@ class TestAccountService(TestCase):
         response = self.client.get('/', environ_overrides=HTTPS_ENVIRON)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Check for the CORS header
-        self.assertEqual(response.headers.get('Access-Control-Allow-Origin'), '*')
+        self.assertEqual(
+            response.headers.get('Access-Control-Allow-Origin'),
+            '*'
+        )
